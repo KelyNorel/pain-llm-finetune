@@ -1,0 +1,7 @@
+mlx
+mlx-lm
+pandas
+numpy
+scikit-learn
+jupyter
+tqdm
