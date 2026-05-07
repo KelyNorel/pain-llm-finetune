@@ -172,3 +172,23 @@ All processing is fully local and HIPAA-compliant (Apple M4, 24GB).
 - Physical_Pain still constant (7.2) — model memorizes most common value
 - RAG still wins overall, but FT-v3 wins on Depression specifically
 - Suggests RAG + FT-v3 combination may be optimal
+
+## RAG + Fine-tuned (v3) — Result
+
+**Finding: Negative result — fine-tuning overfit contaminates RAG**
+
+When combining RAG with the fine-tuned model (v3), the model generates 7.2 for 
+almost all metrics regardless of transcript content or retrieved context. 
+The fine-tuning memorization completely overrides the RAG context.
+
+**Conclusion:** Fine-tuning with n=67 introduces such strong memorization that 
+it cannot be recovered by RAG augmentation. Parameter memorization overrides 
+retrieved context.
+
+**Implication:** Fix the fine-tuning first (more data, better regularization) 
+before combining with RAG.
+
+## Next Steps
+1. Expand knowledge base with pain-specific papers (Physical_Pain weakest metric in RAG)
+2. Re-run RAG with improved knowledge base
+3. Fix fine-tuning overfitting before attempting RAG + fine-tuned combination
