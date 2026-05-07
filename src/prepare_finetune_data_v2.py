@@ -5,6 +5,7 @@ from pathlib import Path
 
 TRANSCRIPTS = {
     "general": Path("data/transcripts/general"),
+   # "full": Path("data/transcripts/full"),
     "dx": Path("data/transcripts/dx")
 }
 SCORES_405B = Path("data/processed/llm_scores_clbp_405b.csv")
@@ -55,7 +56,7 @@ Response:
     val = examples[split:]
 
     for split_name, data in [("train", train), ("valid", val)]:
-        path = OUTPUT_DIR / f"finetune_v3_{split_name}.jsonl"
+        path = OUTPUT_DIR / f"{split_name}.jsonl"
         with open(path, "w") as f:
             for ex in data:
                 f.write(json.dumps(ex) + "\n")
@@ -63,3 +64,4 @@ Response:
 
 if __name__ == "__main__":
     prepare_dataset()
+
