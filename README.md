@@ -72,3 +72,32 @@ scoring, particularly for cognitively complex constructs (Catastrophizing, Agenc
 - Train/val gap of 0.271 suggests moderate overfitting (expected with n=67)
 - Split was ordered by Study ID, not randomized — to fix in next iteration
 - Adapters saved to models/lora_adapters/adapters.safetensors
+
+## Comparison: Baseline vs RAG vs Fine-tuned (Spearman r vs 405B ground truth)
+
+| Metric | Baseline | RAG | Fine-tuned |
+|--------|----------|-----|------------|
+| Physical_Pain | 0.369** | 0.367** | nan |
+| Emotional_Pain | 0.343** | 0.290* | 0.261* |
+| Depression | 0.396*** | 0.375** | 0.386** |
+| poor_QoL | 0.309* | 0.559*** | -0.148 |
+| Anxiety | 0.302* | 0.425*** | 0.293* |
+| Catastrophizing | 0.212 | 0.263* | 0.137 |
+| Rumination | 0.311* | 0.349** | -0.035 |
+| Narrative_Fragmentation | 0.340** | 0.347** | 0.202 |
+| Agency_Deficit | 0.306* | 0.326** | 0.158 |
+
+*p<0.05, **p<0.01, ***p<0.001
+
+## Key Findings
+
+- **RAG > Baseline** on most metrics, especially poor_QoL (0.309→0.559) and Anxiety (0.302→0.425)
+- **RAG made Catastrophizing significant** (0.212ns→0.263*) — clinical literature helps cognitively complex constructs
+- **Fine-tuning with n=67 overfit severely** — Physical_Pain constant (7.2) for all subjects
+- **Next steps:** Data augmentation (full + general + dx transcripts) to increase training set ~3x before fine-tuning
+
+## Conclusions
+
+RAG with domain-specific clinical literature outperforms vanilla prompting for most metrics.
+Fine-tuning requires more data — augmentation with all transcript types planned for v2.
+All processing is fully local and HIPAA-compliant (Apple M4, 24GB).
