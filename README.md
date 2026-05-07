@@ -41,3 +41,34 @@ Spearman correlations between 3B and 405B scores on CLBP cohort (n=67):
 
 **Hypothesis:** Fine-tuning improves small LLM replication of large model clinical 
 scoring, particularly for cognitively complex constructs (Catastrophizing, Agency Deficit).
+
+## Fine-tuning (LoRA)
+
+**Method:** LoRA (Low-Rank Adaptation) via MLX
+- Base model: Llama 3.2 3B Instruct (4-bit quantized)
+- Trainable parameters: 0.108% (3.47M / 3,212M)
+- Layers: last 8 transformer layers (q_proj, v_proj)
+- Iterations: 100, batch size: 1, learning rate: 1e-5
+- Train/val split: 80/20 (53 train, 14 val)
+- Peak memory: 6.66 GB (of 24 GB available, M4)
+
+**Training loss:**
+| Iter | Train Loss | Val Loss |
+|------|-----------|---------|
+| 1    | -         | 2.792   |
+| 10   | 2.712     | -       |
+| 20   | 2.408     | -       |
+| 30   | 2.108     | -       |
+| 40   | 2.054     | -       |
+| 50   | 1.952     | -       |
+| 60   | 2.059     | -       |
+| 70   | 1.873     | -       |
+| 80   | 1.866     | -       |
+| 90   | 1.915     | -       |
+| 100  | 2.027     | 2.298   |
+
+**Notes:**
+- Val loss dropped from 2.792 → 2.298 (improvement: 0.494)
+- Train/val gap of 0.271 suggests moderate overfitting (expected with n=67)
+- Split was ordered by Study ID, not randomized — to fix in next iteration
+- Adapters saved to models/lora_adapters/adapters.safetensors
