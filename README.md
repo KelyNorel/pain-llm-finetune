@@ -148,3 +148,14 @@ clinical literature is the most practical approach for HIPAA-compliant deploymen
 1. Expand RAG knowledge base with pain-specific papers
 2. Re-run RAG with improved knowledge base and compare
 3. Fix fine-tuning overfitting before attempting RAG+FT
+
+## Publication Target
+
+**Proposed angle:**
+> "HIPAA-compliant local deployment of small LLMs for clinical NLP — RAG outperforms fine-tuning with limited labeled data"
+
+**Target journals:**
+- JMIR AI — strong fit, publishes LLM methodology in health, moderate N acceptable
+- Journal of Biomedical Informatics — methodological focus, small N ok if technical contribution is clear
+- Frontiers in Digital Health — flexible, publishes pipelines and methods
+- PLOS ONE — if angle is reproducibility and open methodology
