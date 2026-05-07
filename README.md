@@ -139,3 +139,36 @@ All processing is fully local and HIPAA-compliant (Apple M4, 24GB).
 - Fine-tuning with n=67 (even with 3x augmentation) leads to overfitting
 - Key insight: for small LLMs in specialized clinical domains, retrieval-augmented generation outperforms parameter fine-tuning when labeled data is scarce
 - Next: RAG + Fine-tuned combination to be tested
+
+## Fine-tuning v3 (LoRA — general + dx only, no duplication)
+
+**Changes vs v2:**
+- Removed `full` transcripts (full = general + dx, was duplicating data)
+- Dataset: 134 examples (general + dx only)
+- Train/val: 107/27, shuffled with random.seed(42)
+
+**Training:**
+- Val loss: 2.836 → 2.385 (best val loss across all versions)
+- Train/val gap: 0.304
+- Peak memory: 14.0 GB
+
+## Updated Comparison (Spearman r vs 405B ground truth, n=67)
+
+| Metric | Baseline | RAG | FT-v1 | FT-v2 | FT-v3 |
+|--------|----------|-----|-------|-------|-------|
+| Physical_Pain | 0.369** | 0.367** | nan | -0.068 | nan |
+| Emotional_Pain | 0.343** | 0.290* | 0.261* | 0.152 | 0.261* |
+| Depression | 0.396*** | 0.375** | 0.386** | 0.354** | 0.464*** |
+| poor_QoL | 0.309* | 0.559*** | -0.148 | 0.022 | 0.182 |
+| Anxiety | 0.302* | 0.425*** | 0.293* | 0.108 | 0.067 |
+| Catastrophizing | 0.212 | 0.263* | 0.137 | 0.153 | -0.041 |
+| Rumination | 0.311* | 0.349** | -0.035 | 0.117 | -0.035 |
+| Narrative_Fragmentation | 0.340** | 0.347** | 0.202 | -0.028 | 0.268* |
+| Agency_Deficit | 0.306* | 0.326** | 0.158 | 0.130 | 0.138 |
+
+## Key Insight — FT-v3
+- Depression: 0.464*** — best across ALL conditions including RAG
+- Narrative_Fragmentation: 0.268* — recovered significance
+- Physical_Pain still constant (7.2) — model memorizes most common value
+- RAG still wins overall, but FT-v3 wins on Depression specifically
+- Suggests RAG + FT-v3 combination may be optimal
