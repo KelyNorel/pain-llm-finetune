@@ -9,7 +9,8 @@ OUTPUT_DIR = Path("data/processed")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 MODEL_PATH = "mlx-community/Llama-3.2-3B-Instruct-4bit"
-ADAPTER_PATH = "models/lora_adapters"
+#ADAPTER_PATH = "models/lora_adapters"
+ADAPTER_PATH =  "models/lora_adapters_v2"
 
 METRICS = ["Physical_Pain", "Emotional_Pain", "Depression", "poor_QoL",
            "Anxiety", "Catastrophizing", "Rumination",
@@ -92,7 +93,7 @@ def run_batch():
             df[col] = None
     
     df = df[["study_id"] + METRICS]
-    output_path = OUTPUT_DIR / "llm_scores_clbp_finetuned.csv"
+    output_path = OUTPUT_DIR / "llm_scores_clbp_finetuned_v2.csv"
     df.to_csv(output_path, index=False)
     print(f"Saved to {output_path}")
     return df

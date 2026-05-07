@@ -6,11 +6,14 @@ ground_truth = pd.read_csv("data/processed/llm_scores_clbp_405b.csv")
 baseline = pd.read_csv("data/processed/llm_scores_clbp_small.csv")
 rag = pd.read_csv("data/processed/llm_scores_clbp_rag.csv")
 finetuned = pd.read_csv("data/processed/llm_scores_clbp_finetuned.csv")
+finetuned_v2 = pd.read_csv("data/processed/llm_scores_clbp_finetuned_v2.csv")
+
 
 # Merge todo por study_id
 df = ground_truth.merge(baseline, on="study_id", suffixes=("_405b", "_baseline"))
 df = df.merge(rag, on="study_id", suffixes=("", "_rag"))
 df = df.merge(finetuned, on="study_id", suffixes=("", "_finetuned"))
+df = df.merge(finetuned_v2, on="study_id", suffixes=("", "_v2"))
 
 print(f"Subjects matched: {len(df)}\n")
 
@@ -26,6 +29,7 @@ for metric in METRICS:
     col_base = f"{metric}_baseline"
     col_rag = f"{metric}_rag"
     col_ft = f"{metric}_finetuned"
+    col_v2 = f"{metric}_v2"
 
     # Renombrar columnas del merge
     if col_rag not in df.columns:
@@ -34,7 +38,7 @@ for metric in METRICS:
         col_ft = metric + "_finetuned" if metric + "_finetuned" in df.columns else metric
 
     results = {}
-    for name, col in [("baseline", col_base), ("rag", col_rag), ("ft", col_ft)]:
+    for name, col in [("baseline", col_base), ("rag", col_rag), ("ft", col_ft),("v2", col_v2)]:
         if col in df.columns:
             r, p = stats.spearmanr(df[col_405b], df[col])
             sig = "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else "ns"
@@ -42,4 +46,4 @@ for metric in METRICS:
         else:
             results[name] = "N/A"
 
-    print(f"{metric:<25} {results.get('baseline','N/A'):>10} {results.get('rag','N/A'):>10} {results.get('ft','N/A'):>12}")
+    print(f"{metric:<25} {results.get('baseline','N/A'):>10} {results.get('rag','N/A'):>10} {results.get('ft','N/A'):>12} {results.get('v2','N/A'):>10}")

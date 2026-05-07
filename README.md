@@ -101,3 +101,41 @@ scoring, particularly for cognitively complex constructs (Catastrophizing, Agenc
 RAG with domain-specific clinical literature outperforms vanilla prompting for most metrics.
 Fine-tuning requires more data — augmentation with all transcript types planned for v2.
 All processing is fully local and HIPAA-compliant (Apple M4, 24GB).
+
+## Fine-tuning v2 (LoRA with data augmentation)
+
+**Changes vs v1:**
+- Dataset: 201 examples (3x — general + full + dx transcripts)
+- Shuffled with random.seed(42) — randomized train/val split
+- Iters: 200, batch-size: 2
+- Note: transcripts >2048 tokens truncated (max observed: 4985 tokens)
+
+**Training:**
+- Val loss: 2.964 → 2.521
+- Train/val gap: 0.094 (vs 0.271 in v1) — less overfit ✅
+- Peak memory: 14.0 GB
+
+## Final Comparison (Spearman r vs 405B ground truth, n=67)
+
+| Metric | Baseline | RAG | FT-v1 | FT-v2 |
+|--------|----------|-----|-------|-------|
+| Physical_Pain | 0.369** | 0.367** | nan | -0.068 |
+| Emotional_Pain | 0.343** | 0.290* | 0.261* | 0.152 |
+| Depression | 0.396*** | 0.375** | 0.386** | 0.354** |
+| poor_QoL | 0.309* | 0.559*** | -0.148 | 0.022 |
+| Anxiety | 0.302* | 0.425*** | 0.293* | 0.108 |
+| Catastrophizing | 0.212 | 0.263* | 0.137 | 0.153 |
+| Rumination | 0.311* | 0.349** | -0.035 | 0.117 |
+| Narrative_Fragmentation | 0.340** | 0.347** | 0.202 | -0.028 |
+| Agency_Deficit | 0.306* | 0.326** | 0.158 | 0.130 |
+
+*p<0.05, **p<0.01, ***p<0.001
+
+## Overall Conclusion
+
+**RAG > Baseline > FT-v1 > FT-v2**
+
+- RAG with domain-specific clinical literature is the most effective approach
+- Fine-tuning with n=67 (even with 3x augmentation) leads to overfitting
+- Key insight: for small LLMs in specialized clinical domains, retrieval-augmented generation outperforms parameter fine-tuning when labeled data is scarce
+- Next: RAG + Fine-tuned combination to be tested
