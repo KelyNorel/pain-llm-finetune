@@ -192,3 +192,21 @@ before combining with RAG.
 1. Expand knowledge base with pain-specific papers (Physical_Pain weakest metric in RAG)
 2. Re-run RAG with improved knowledge base
 3. Fix fine-tuning overfitting before attempting RAG + fine-tuned combination
+
+## Complete Results Table (Spearman r vs 405B ground truth, n=67)
+
+| Metric | Baseline | RAG | FT-v1 | FT-v2 | FT-v3 | RAG+FT |
+|--------|----------|-----|-------|-------|-------|--------|
+| Physical_Pain | 0.369** | 0.367** | nan | -0.068 | nan | n/a* |
+| Emotional_Pain | 0.343** | 0.290* | 0.261* | 0.152 | 0.261* | n/a* |
+| Depression | 0.396*** | 0.375** | 0.386** | 0.354** | 0.464*** | n/a* |
+| poor_QoL | 0.309* | 0.559*** | -0.148 | 0.022 | 0.182 | n/a* |
+| Anxiety | 0.302* | 0.425*** | 0.293* | 0.108 | 0.067 | n/a* |
+| Catastrophizing | 0.212 | 0.263* | 0.137 | 0.153 | -0.041 | n/a* |
+| Rumination | 0.311* | 0.349** | -0.035 | 0.117 | -0.035 | n/a* |
+| Narrative_Fragmentation | 0.340** | 0.347** | 0.202 | -0.028 | 0.268* | n/a* |
+| Agency_Deficit | 0.306* | 0.326** | 0.158 | 0.130 | 0.138 | n/a* |
+
+*p<0.05, **p<0.01, ***p<0.001
+
+*RAG+FT: model collapsed to constant output (7.2) — fine-tuning overfit overrides RAG context
