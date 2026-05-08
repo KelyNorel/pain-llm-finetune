@@ -18,6 +18,9 @@ CLBP cohort only (n=67 participants).
 - `data/transcripts/dx/` — diagnostic section (TXT, CLBP participants only)
 - `data/transcripts/full/` — full interview (TXT, general + dx combined)
 
+**Note:** Transcripts exceeding 2000 words are truncated before scoring. 
+Longest transcript observed: 3156 words (subject 1248).
+
 ## Environment
 - Apple M4, 24GB unified memory
 - MLX — fine-tuning framework, optimized for Apple Silicon
@@ -42,9 +45,10 @@ python src/ingest.py  # build RAG knowledge base from literature PDFs
 | `src/run_scoring.py` | Batch baseline scoring over all subjects |
 | `src/run_scoring_rag.py` | Batch RAG scoring |
 | `src/run_scoring_finetuned.py` | Batch scoring with fine-tuned model (MLX) |
+| `src/compare_all.py` | Compare all conditions vs 405B ground truth (general section) |
+| `src/compare_all_dx.py` | Compare baseline and RAG vs 405B ground truth (dx section) |
 | `src/ingest.py` | Ingest clinical literature PDFs into ChromaDB |
 | `src/prepare_finetune_data.py` | Prepare JSONL dataset for LoRA fine-tuning |
-| `src/compare_all.py` | Compare all conditions vs 405B ground truth |
 
 ### Metrics (0.0–10.0, higher = worse)
 Nine clinical metrics extracted per transcript, matching the published pipeline:
@@ -55,31 +59,9 @@ Rumination, Narrative_Fragmentation, Agency_Deficit
 
 ## Results
 
-### Baseline: Llama 3.2 3B vs Llama 405B (ground truth)
-
-Spearman correlations on CLBP cohort (n=67). Higher r = 3B scores agree more with 405B.
-
-| Metric | r | p-value |
-|--------|---|---------|
-| Physical_Pain | 0.369 | 0.002 ** |
-| Emotional_Pain | 0.343 | 0.005 ** |
-| Depression | 0.396 | 0.001 *** |
-| poor_QoL | 0.309 | 0.011 * |
-| Anxiety | 0.302 | 0.013 * |
-| Catastrophizing | 0.212 | 0.085 |
-| Rumination | 0.311 | 0.010 * |
-| Narrative_Fragmentation | 0.340 | 0.005 ** |
-| Agency_Deficit | 0.306 | 0.012 * |
-
-*p<0.05, **p<0.01, ***p<0.001
-
-The 3B model shows moderate agreement with the 405B across most metrics. 
-Catastrophizing is the only non-significant metric — consistent with it being 
-a cognitively complex construct requiring deeper clinical reasoning.
-
----
-
-### Complete Comparison: All Conditions (Spearman r vs 405B ground truth, n=67)
+### General Section: Agreement between Llama 3.2 3B and Llama 405B
+Spearman r — higher values indicate stronger agreement with 405B ground truth  
+(n=67 CLBP participants, general interview section — participants not discussing their condition)
 
 | Metric | Baseline | RAG | FT-v1 | FT-v2 | FT-v3 | RAG+FT |
 |--------|----------|-----|-------|-------|-------|--------|
@@ -99,23 +81,52 @@ nan = model output was constant (no variance), Spearman undefined
 
 ---
 
+### Diagnostic Section (dx): Agreement between Llama 3.2 3B and Llama 405B
+Spearman r — higher values indicate stronger agreement with 405B ground truth  
+(n=67 CLBP participants, condition-specific interview section)
+
+| Metric | Baseline | RAG |
+|--------|----------|-----|
+| Physical_Pain | 0.682*** | 0.600*** |
+| Emotional_Pain | 0.599*** | 0.578*** |
+| Depression | 0.572*** | 0.518*** |
+| poor_QoL | 0.632*** | 0.534*** |
+| Anxiety | 0.445*** | 0.491*** |
+| Catastrophizing | 0.425*** | 0.082 |
+| Rumination | 0.549*** | 0.527*** |
+| Narrative_Fragmentation | 0.261* | 0.451*** |
+| Agency_Deficit | 0.328** | 0.345** |
+
+*p<0.05, **p<0.01, ***p<0.001
+
+---
+
 ## Key Findings
 
-**1. RAG improves agreement with 405B on most metrics**
-RAG scores agree more with 405B ground truth than baseline, especially:
+**1. Small LLMs capture clinical signal from non-condition-specific narratives**
+In the general section, participants do not discuss their condition directly — yet the 3B 
+model shows significant agreement with 405B ground truth on 8/9 metrics. This demonstrates 
+that small LLMs can infer clinical state from naturalistic conversation, without explicit 
+symptom reporting.
+
+**2. RAG with clinical literature improves general section scoring**
+When transcript content is non-specific, retrieving relevant clinical literature as context 
+improves agreement with 405B ground truth:
 - poor_QoL: 0.309 → 0.559*** (largest improvement)
 - Anxiety: 0.302 → 0.425***
-- Catastrophizing: 0.212 (ns) → 0.263* (became significant — clinical literature helps)
+- Catastrophizing: 0.212 (ns) → 0.263* (became significant)
 
-**2. Fine-tuning with n=67 leads to severe overfitting**
-All fine-tuning versions (v1, v2, v3) memorize a constant value (7.2) for Physical_Pain.
-The model learns the most frequent training value instead of the underlying construct.
+**3. Diagnostic section: RAG does not add value over baseline**
+In dx, the transcript content is already condition-specific — RAG context does not improve 
+and can hurt (Catastrophizing: 0.425*** → 0.082ns). 
+Exception: Narrative_Fragmentation benefits from RAG (0.261* → 0.451***), suggesting 
+this construct requires external clinical context regardless of transcript specificity.
 
-**3. Exception: FT-v3 wins on Depression**
-FT-v3 (general + dx transcripts, no duplication) achieves r=0.464*** for Depression —
-the best result across all conditions including RAG (0.375**).
+**4. Fine-tuning with n=67 leads to severe overfitting**
+All fine-tuning versions (v1–v3) memorize a constant value for Physical_Pain.
+Exception: FT-v3 achieves best Depression agreement across all conditions (r=0.464***).
 
-**4. RAG + Fine-tuned: negative result**
+**5. RAG + Fine-tuned: negative result**
 Combining RAG with the fine-tuned model collapses to constant output — 
 parameter memorization overrides retrieved context entirely.
 
@@ -123,11 +134,12 @@ parameter memorization overrides retrieved context entirely.
 
 ## Fine-tuning Details
 
-| Version | Dataset | Train/Val | Iters | Val loss (start→end) | Notes |
-|---------|---------|-----------|-------|----------------------|-------|
-| v1 | 67 (general only) | 53/14, ordered | 100 | 2.792→2.298 | baseline FT |
-| v2 | 201 (general+full+dx) | 160/41, shuffled | 200 | 2.964→2.521 | full duplicates general+dx |
-| v3 | 134 (general+dx) | 107/27, shuffled | 200 | 2.836→2.385 | best val loss |
+| Version | Dataset | Ground truth | Train/Val | Iters | Val loss (start→end) | Notes |
+|---------|---------|-------------|-----------|-------|----------------------|-------|
+| v1 | 67 (general) | 405b_general | 53/14, ordered | 100 | 2.792→2.298 | baseline FT |
+| v2 | 201 (general+full+dx) | 405b_general | 160/41, shuffled | 200 | 2.964→2.521 | full duplicates general+dx |
+| v3 | 134 (general+dx) | 405b_general | 107/27, shuffled | 200 | 2.836→2.385 | best val loss, but wrong GT for dx |
+| v4 | 134 (general+dx) | 405b_general + 405b_dx | 107/27, shuffled | TBD | TBD | correct GT per section |
 
 **Method:** LoRA via MLX — 0.108% trainable parameters (3.47M / 3,212M), last 8 layers  
 **Peak memory:** 6.6 GB (v1) / 14.0 GB (v2, v3) of 24 GB available
@@ -136,23 +148,28 @@ parameter memorization overrides retrieved context entirely.
 
 ## Conclusions
 
-**RAG > Baseline >> Fine-tuning (n=67)**
+**For general section: RAG > Baseline >> Fine-tuning (n=67)**
+**For dx section: Baseline > RAG**
 
-For small LLMs in specialized clinical domains, retrieval-augmented generation 
-outperforms parameter fine-tuning when labeled data is scarce. RAG with domain-specific 
-clinical literature is the most practical approach for HIPAA-compliant deployment.
+- Small LLMs can capture clinical signal from non-condition-specific narratives (key finding)
+- RAG with domain-specific literature is most effective when transcript content is non-specific
+- dx transcripts are sufficiently informative without additional context
+- Fine-tuning v4 (with correct ground truth per section) is the next step
+- All processing is fully local and HIPAA-compliant (Apple M4, 24GB)
 
 ---
 
 ## Next Steps
-1. Expand RAG knowledge base with pain-specific papers
-2. Re-run RAG with improved knowledge base and compare
-3. Fix fine-tuning overfitting before attempting RAG+FT
+1. Fine-tuning v4 — use 405b_dx as ground truth for dx transcripts
+2. Expand RAG knowledge base with pain-specific papers (RAG v2)
+3. Re-run RAG v2 on general section and compare
+
+---
 
 ## Publication Target
 
 **Proposed angle:**
-> "HIPAA-compliant local deployment of small LLMs for clinical NLP — RAG outperforms fine-tuning with limited labeled data"
+> "HIPAA-compliant local deployment of small LLMs for clinical NLP — small models capture clinical signal from non-condition-specific narratives, RAG helps when content is non-specific"
 
 **Target journals:**
 - JMIR AI — strong fit, publishes LLM methodology in health, moderate N acceptable
