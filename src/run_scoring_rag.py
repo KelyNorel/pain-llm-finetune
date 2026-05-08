@@ -4,6 +4,7 @@ from pathlib import Path
 from llm_scorer_rag import score_transcript_rag
 
 TRANSCRIPTS_DIR = Path("data/transcripts/general")
+#TRANSCRIPTS_DIR = Path("data/transcripts/dx")
 OUTPUT_DIR = Path("data/processed")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -43,7 +44,8 @@ def run_batch():
             "Narrative_Fragmentation", "Agency_Deficit"]
     df = df[cols]
 
-    output_path = OUTPUT_DIR / "llm_scores_clbp_rag.csv"
+    output_path = OUTPUT_DIR / "llm_scores_clbp_rag_v2.csv"
+    #output_path = OUTPUT_DIR / "llm_scores_clbp_dx_rag.csv"
     df.to_csv(output_path, index=False)
     print(f"Saved to {output_path}")
     return df

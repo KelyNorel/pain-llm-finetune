@@ -5,7 +5,9 @@ from llm_scorer import score_transcript
 import time
 
 # Paths
-TRANSCRIPTS_DIR = Path("data/transcripts/general")
+#TRANSCRIPTS_DIR = Path("data/transcripts/general")
+TRANSCRIPTS_DIR = Path("data/transcripts/dx")
+
 OUTPUT_DIR = Path("data/processed")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -20,12 +22,12 @@ def run_batch():
     
     results = []
     
-    for txt_path in txt_files:
-    #for i, txt_path in enumerate(txt_files):
+
+    for i, txt_path in enumerate(txt_files):
     #    if i >= 3:
     #        break
         study_id = extract_study_id(txt_path.name)
-        print(f"Processing {study_id}...")
+        print(f"Processing {study_id}... ({i+1}/{len(txt_files)})")
         
         try:
             text = txt_path.read_text(encoding="utf-8")
@@ -48,7 +50,9 @@ def run_batch():
             "Narrative_Fragmentation", "Agency_Deficit"]
     df = df[cols]
     
-    output_path = OUTPUT_DIR / "llm_scores_clbp_small_test3.csv"
+    #output_path = OUTPUT_DIR / "llm_scores_clbp_small_test3.csv"
+    output_path = OUTPUT_DIR / "llm_scores_clbp_dx_small.csv"
+
     df.to_csv(output_path, index=False)
     print(f"\nDone! {len(df)} subjects scored.")
     print(f"Saved to {output_path}")
