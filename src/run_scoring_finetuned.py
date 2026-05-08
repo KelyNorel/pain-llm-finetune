@@ -62,6 +62,11 @@ def run_batch():
 
         try:
             transcript = txt_path.read_text(encoding="utf-8").strip()
+             # Truncar si es muy largo
+            words = transcript_text.split()
+            if len(words) > 2000:
+                transcript_text = ' '.join(words[:2000])
+                print(f"  Truncated to 2000 words")
             prompt = PROMPT_TEMPLATE.format(transcript=transcript)
 
             response = generate(

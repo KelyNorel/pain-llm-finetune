@@ -104,6 +104,11 @@ Transcript:
         return None
 
 def score_transcript_rag(transcript_text: str) -> dict:
+     # Truncar si es muy largo
+    words = transcript_text.split()
+    if len(words) > 2000:
+        transcript_text = ' '.join(words[:2000])
+        print(f"  Truncated to 2000 words")
     """Score los 9 metrics con RAG, un prompt por métrica."""
     results = {}
     for metric, config in METRICS_CONFIG.items():

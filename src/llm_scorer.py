@@ -30,8 +30,13 @@ Provide only a valid JSON response with decimal values to one decimal place. The
 Think deeply."""
 
 
-def score_transcript(transcript_text: str) -> dict:
+def score_transcript(transcript_text: str, max_words: int = 2000) -> dict:
     """Score a transcript using both prompts. Returns merged dict of 9 metrics."""
+    # Truncaate if too long
+    words = transcript_text.split()
+    if len(words) > max_words:
+        transcript_text = ' '.join(words[:max_words])
+        print(f"  Truncated to {max_words} words")
     
     results = {}
     

@@ -102,6 +102,10 @@ def run_batch():
 
         try:
             transcript = txt_path.read_text(encoding="utf-8").strip()
+            # Truncar
+            words = transcript.split()
+            if len(words) > 2000:
+                transcript = ' '.join(words[:2000])
             scores = score_transcript_rag_ft(transcript, model, tokenizer)
             scores["study_id"] = int(study_id)
             results.append(scores)
