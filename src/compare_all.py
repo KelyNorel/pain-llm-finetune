@@ -19,6 +19,9 @@ df = df.merge(finetuned_v2, on="study_id", suffixes=("", "_v2"))
 df = df.merge(finetuned_v3, on="study_id", suffixes=("", "_v3"))
 df = df.merge(rag2, on="study_id", suffixes=("", "_rag2"))
 
+finetuned_v4 = pd.read_csv("data/processed/llm_scores_clbp_finetuned_v4.csv")
+df = df.merge(finetuned_v4, on="study_id", suffixes=("", "_v4"))
+
 print(f"Subjects matched: {len(df)}\n")
 
 METRICS = ["Physical_Pain", "Emotional_Pain", "Depression", "poor_QoL",
@@ -26,7 +29,7 @@ METRICS = ["Physical_Pain", "Emotional_Pain", "Depression", "poor_QoL",
            "Narrative_Fragmentation", "Agency_Deficit"]
 
 
-print(f"{'Metric':<25} {'Baseline':>10} {'RAG-v1':>10} {'RAG-v2':>10} {'FT-v1':>10} {'FT-v2':>10} {'FT-v3':>10}")
+print(f"{'Metric':<25} {'Baseline':>10} {'RAG-v1':>10} {'RAG-v2':>10} {'FT-v1':>10} {'FT-v2':>10} {'FT-v3':>10} {'FT-v4':>10}")
 print("-" * 62)
 
 for metric in METRICS:
@@ -37,6 +40,7 @@ for metric in METRICS:
     col_ft = f"{metric}_finetuned"
     col_v2 = f"{metric}_v2"
     col_v3 = f"{metric}_v3"
+    col_v4 = f"{metric}_v4"
 
     # Renombrar columnas del merge
     if col_rag not in df.columns:
@@ -45,7 +49,7 @@ for metric in METRICS:
         col_ft = metric + "_finetuned" if metric + "_finetuned" in df.columns else metric
 
     results = {}
-    for name, col in [("baseline", col_base), ("rag", col_rag), ("rag2", col_rag2), ("ft", col_ft),("v2", col_v2),("v3", col_v3)]:
+    for name, col in [("baseline", col_base), ("rag", col_rag), ("rag2", col_rag2), ("ft", col_ft),("v2", col_v2),("v3", col_v3),("v4", col_v4)]:
         if col in df.columns:
             r, p = stats.spearmanr(df[col_405b], df[col])
             sig = "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else "ns"
@@ -53,4 +57,4 @@ for metric in METRICS:
         else:
             results[name] = "N/A"
 
-    print(f"{metric:<25} {results.get('baseline','N/A'):>10} {results.get('rag','N/A'):>10} {results.get('rag2','N/A'):>10} {results.get('ft','N/A'):>12} {results.get('v2','N/A'):>10} {results.get('v3','N/A'):>10}")
+    print(f"{metric:<25} {results.get('baseline','N/A'):>10} {results.get('rag','N/A'):>10} {results.get('rag2','N/A'):>10} {results.get('ft','N/A'):>12} {results.get('v2','N/A'):>10} {results.get('v3','N/A'):>10} {results.get('v4','N/A'):>10}")

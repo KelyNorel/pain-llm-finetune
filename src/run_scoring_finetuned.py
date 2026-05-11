@@ -11,7 +11,8 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 MODEL_PATH = "mlx-community/Llama-3.2-3B-Instruct-4bit"
 #ADAPTER_PATH = "models/lora_adapters"
 #ADAPTER_PATH =  "models/lora_adapters_v2"
-ADAPTER_PATH = "models/lora_adapters_v3"
+#ADAPTER_PATH = "models/lora_adapters_v3"
+ADAPTER_PATH = "models/lora_adapters_v4_150"
 
 METRICS = ["Physical_Pain", "Emotional_Pain", "Depression", "poor_QoL",
            "Anxiety", "Catastrophizing", "Rumination",
@@ -62,10 +63,9 @@ def run_batch():
 
         try:
             transcript = txt_path.read_text(encoding="utf-8").strip()
-             # Truncar si es muy largo
-            words = transcript_text.split()
+            words = transcript.split()
             if len(words) > 2000:
-                transcript_text = ' '.join(words[:2000])
+                transcript = ' '.join(words[:2000])
                 print(f"  Truncated to 2000 words")
             prompt = PROMPT_TEMPLATE.format(transcript=transcript)
 
@@ -99,7 +99,7 @@ def run_batch():
             df[col] = None
     
     df = df[["study_id"] + METRICS]
-    output_path = OUTPUT_DIR / "llm_scores_clbp_finetuned_v3.csv"
+    output_path = OUTPUT_DIR / "llm_scores_clbp_finetuned_v4.csv"
     df.to_csv(output_path, index=False)
     print(f"Saved to {output_path}")
     return df
