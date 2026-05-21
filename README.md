@@ -178,5 +178,17 @@ general section is transcript content specificity, not model capability.
 
 ---
 
+## Stack
+
+- **Python, pandas** — data processing and batch scoring
+- **Ollama** — local model serving (Llama 3.2 3B)
+- **MLX** — LoRA fine-tuning framework, optimized for Apple Silicon (M4)
+- **ChromaDB** — local vector store for RAG knowledge base
+- **LangChain** — text splitting (RecursiveCharacterTextSplitter) for PDF ingestion
+- **pypdf** — PDF text extraction for clinical literature
+- **sentence-transformers** — embeddings for RAG (all-MiniLM-L6-v2)
+- **scipy** — Spearman correlation and statistical testing
+- **JupyterLab** — analysis and comparison notebooks
+
 ## Next Steps
 1. Test with larger local model (Llama 70B) on dedicated GPU hardware (e.g. Lambda workstation)
